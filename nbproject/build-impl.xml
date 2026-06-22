@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="tubes_pbo_rasentyur-impl" default="default" basedir="..">
+    <property file="nbproject/project.properties"/>
+
+    <target name="-init">
+        <mkdir dir="${build.classes.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
+    <target name="compile" depends="-init">
+        <javac
+            srcdir="${src.dir}"
+            destdir="${build.classes.dir}"
+            includeantruntime="false"
+            source="${javac.source}"
+            target="${javac.target}"
+            encoding="${source.encoding}"
+            debug="true">
+            <classpath>
+                <pathelement path="${javac.classpath}"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar jarfile="${dist.jar}" basedir="${build.classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${main.class}"/>
+                <attribute name="Class-Path" value="lib/mysql-connector-j.jar"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="compile">
+        <java classname="${main.class}" fork="true" dir="${run.workingdir}">
+            <classpath>
+                <pathelement path="${run.classpath}"/>
+            </classpath>
+            <jvmarg line="${run.jvmargs}"/>
+        </java>
+    </target>
+
+    <target name="debug" depends="compile">
+        <java classname="${main.class}" fork="true" dir="${run.workingdir}">
+            <classpath>
+                <pathelement path="${debug.classpath}"/>
+            </classpath>
+            <jvmarg line="${run.jvmargs}"/>
+        </java>
+    </target>
+
+    <target name="default" depends="jar"/>
+</project>

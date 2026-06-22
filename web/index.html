@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TelyuStay - Sistem Manajemen Asrama</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="bg-shape shape-1"></div>
+    <div class="bg-shape shape-2"></div>
+
+    <div class="app">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">T</div>
+                <div>
+                    <h1>TelyuStay</h1>
+                    <p>Manajemen Asrama</p>
+                </div>
+            </div>
+            <nav class="nav">
+                <button class="nav-btn active" data-section="dashboard"><span class="nav-icon">📊</span> Dashboard</button>
+                <button class="nav-btn" data-section="mahasiswa"><span class="nav-icon">🎓</span> Mahasiswa</button>
+                <button class="nav-btn" data-section="gedung"><span class="nav-icon">🏢</span> Gedung</button>
+                <button class="nav-btn" data-section="kamar"><span class="nav-icon">🛏️</span> Kamar</button>
+                <button class="nav-btn" data-section="izin"><span class="nav-icon">📋</span> Izin Keluar</button>
+                <button class="nav-btn" data-section="laporan"><span class="nav-icon">🔧</span> Laporan</button>
+                <button class="nav-btn" data-section="payment"><span class="nav-icon">💳</span> Pembayaran</button>
+                <button class="nav-btn nav-btn-ai" data-section="ai"><span class="nav-icon">✨</span> Asisten AI</button>
+            </nav>
+            <div class="sidebar-footer">
+                <span class="status-dot"></span>
+                Terhubung ke database_asrama
+            </div>
+        </aside>
+
+        <main class="content">
+            <header class="topbar">
+                <div>
+                    <h2 id="pageTitle">Dashboard</h2>
+                    <p id="pageSubtitle">Ringkasan data sistem asrama Telkom University</p>
+                </div>
+                <button class="btn btn-primary" id="refreshBtn">Refresh Data</button>
+            </header>
+
+            <section id="dashboard" class="section active">
+                <div class="dashboard-hero">
+                    <div class="hero-content">
+                        <span class="hero-tag">Telkom University · Integrated Dormitory System</span>
+                        <h3>Selamat datang di <span class="text-gradient">TelyuStay</span></h3>
+                        <p>Kelola penghuni, perizinan, laporan fasilitas, dan pembayaran asrama dalam satu platform modern yang terhubung langsung ke database.</p>
+                        <div class="hero-actions">
+                            <button type="button" class="btn btn-primary" data-goto="mahasiswa">+ Tambah Mahasiswa</button>
+                            <button type="button" class="btn btn-ghost" data-goto="ai">Tanya Asisten AI</button>
+                        </div>
+                    </div>
+                    <div class="hero-visual">
+                        <div class="hero-orbit"></div>
+                        <div class="hero-stat-float">
+                            <span>Live Data</span>
+                            <strong id="heroTotalMhs">—</strong>
+                            <small>Penghuni aktif</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid" id="statsGrid"></div>
+
+                <div class="dashboard-grid">
+                    <div class="panel chart-panel">
+                        <div class="panel-head">
+                            <h3>Ringkasan Hunian</h3>
+                            <span class="panel-meta">Kapasitas vs penghuni</span>
+                        </div>
+                        <div id="occupancyChart" class="occupancy-chart"></div>
+                    </div>
+                    <div class="panel activity-panel">
+                        <div class="panel-head">
+                            <h3>Izin & Laporan Terbaru</h3>
+                            <span class="panel-meta">Update real-time</span>
+                        </div>
+                        <div id="recentActivity" class="activity-list"></div>
+                    </div>
+                    <div class="panel quick-panel">
+                        <div class="panel-head">
+                            <h3>Akses Cepat</h3>
+                        </div>
+                        <div class="quick-actions">
+                            <button type="button" class="quick-card" data-goto="kamar">
+                                <span class="quick-icon">🛏️</span>
+                                <span>Kelola Kamar</span>
+                            </button>
+                            <button type="button" class="quick-card" data-goto="izin">
+                                <span class="quick-icon">📝</span>
+                                <span>Izin Keluar</span>
+                            </button>
+                            <button type="button" class="quick-card" data-goto="laporan">
+                                <span class="quick-icon">🔧</span>
+                                <span>Laporan Fasilitas</span>
+                            </button>
+                            <button type="button" class="quick-card" data-goto="payment">
+                                <span class="quick-icon">💳</span>
+                                <span>Pembayaran</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="mahasiswa" class="section">
+                <div class="panel">
+                    <h3>Tambah / Ubah Mahasiswa</h3>
+                    <form id="formMahasiswa" class="form-grid">
+                        <input type="text" id="mhsId" placeholder="ID Mahasiswa" required>
+                        <input type="text" id="mhsNama" placeholder="Nama Lengkap" required>
+                        <input type="text" id="mhsNim" placeholder="NIM" required>
+                        <input type="text" id="mhsProdi" placeholder="Prodi">
+                        <input type="text" id="mhsTelepon" placeholder="No. Telepon">
+                        <input type="text" id="mhsUsername" placeholder="Username">
+                        <input type="password" id="mhsPassword" placeholder="Password">
+                        <input type="text" id="mhsKamar" placeholder="Nomor Kamar (misal: 410)">
+                        <input type="text" id="mhsGedung" placeholder="Kode/Nama Gedung (misal: GA / Gedung Anggrek)">
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                            <button type="button" class="btn btn-danger" id="deleteMahasiswaBtn">Hapus</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="panel">
+                    <h3>Daftar Mahasiswa</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th><th>Nama</th><th>NIM</th><th>Prodi</th><th>Telepon</th><th>Username</th><th>Kamar</th><th>Gedung</th><th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableMahasiswa"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="gedung" class="section">
+                <div class="panel">
+                    <h3>Tambah / Ubah Gedung</h3>
+                    <form id="formGedung" class="form-grid">
+                        <input type="text" id="gedungKode" placeholder="Kode Gedung" required>
+                        <input type="text" id="gedungNama" placeholder="Nama Gedung" required>
+                        <input type="text" id="gedungJenis" placeholder="Jenis Gedung">
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                            <button type="button" class="btn btn-danger" id="deleteGedungBtn">Hapus</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="panel">
+                    <h3>Daftar Gedung</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>Kode</th><th>Nama</th><th>Jenis</th><th>Kamar</th><th>Penghuni</th><th>Aksi</th></tr>
+                            </thead>
+                            <tbody id="tableGedung"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="kamar" class="section">
+                <div class="panel">
+                    <h3>Tambah Kamar</h3>
+                    <form id="formKamar" class="form-grid">
+                        <input type="text" id="kamarNomor" placeholder="Nomor Kamar" required>
+                        <input type="number" id="kamarKapasitas" placeholder="Kapasitas" required>
+                        <input type="text" id="kamarGedung" placeholder="Kode Gedung">
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                            <button type="button" class="btn btn-danger" id="deleteKamarBtn">Hapus</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="panel">
+                    <h3>Daftar Kamar</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>Nomor</th><th>Gedung</th><th>Kapasitas</th><th>Penghuni</th><th>Nama Penghuni</th><th>Sisa Slot</th><th>Aksi</th></tr>
+                            </thead>
+                            <tbody id="tableKamar"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="izin" class="section">
+                <div class="panel">
+                    <h3>Ajukan Izin Keluar</h3>
+                    <form id="formIzin" class="form-grid">
+                        <input type="text" id="izinMhsId" placeholder="ID Mahasiswa" required>
+                        <input type="text" id="izinTujuan" placeholder="Tujuan" required>
+                        <input type="number" id="izinJamKeluar" placeholder="Jam keluar dari sekarang" value="1">
+                        <input type="number" id="izinJamKembali" placeholder="Jam kembali dari sekarang" value="3">
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Ajukan</button>
+                            <button type="button" class="btn btn-danger" id="deleteIzinBtn">Hapus</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="panel">
+                    <h3>Daftar Izin</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>ID Izin</th><th>Mahasiswa</th><th>Tujuan</th><th>Status</th><th>Aksi</th></tr>
+                            </thead>
+                            <tbody id="tableIzin"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="laporan" class="section">
+                <div class="panel">
+                    <h3>Buat Laporan Fasilitas</h3>
+                    <form id="formLaporan" class="form-grid">
+                        <input type="text" id="laporanMhsId" placeholder="ID Mahasiswa" required>
+                        <input type="text" id="laporanDeskripsi" placeholder="Deskripsi kerusakan" required>
+                        <input type="text" id="laporanLokasi" placeholder="Lokasi" required>
+                        <select id="laporanStatus">
+                            <option value="BARU">BARU</option>
+                            <option value="DIPROSES">DIPROSES</option>
+                            <option value="SELESAI">SELESAI</option>
+                        </select>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                            <button type="button" class="btn btn-danger" id="deleteLaporanBtn">Hapus</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="panel">
+                    <h3>Daftar Laporan</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>ID</th><th>Mahasiswa</th><th>Deskripsi</th><th>Lokasi</th><th>Status</th><th>Aksi</th></tr>
+                            </thead>
+                            <tbody id="tableLaporan"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="payment" class="section">
+                <div class="panel">
+                    <h3>Tambah / Bayar Tagihan</h3>
+                    <form id="formPayment" class="form-grid">
+                        <input type="text" id="payId" placeholder="ID Pembayaran (opsional)">
+                        <input type="text" id="payMhsId" placeholder="ID Mahasiswa">
+                        <input type="number" id="payJumlah" placeholder="Jumlah Tagihan" required>
+                        <input type="number" id="payDenda" placeholder="Denda tambahan" value="0">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="payProses"> Proses pembayaran sekarang
+                        </label>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                            <button type="button" class="btn btn-danger" id="deletePaymentBtn">Hapus</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="panel">
+                    <h3>Daftar Pembayaran</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>ID</th><th>Mahasiswa</th><th>Tagihan</th><th>Denda</th><th>Total</th><th>Status</th><th>Aksi</th></tr>
+                            </thead>
+                            <tbody id="tablePayment"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="ai" class="section">
+                <div class="ai-layout">
+                    <aside class="ai-sidebar">
+                        <div class="ai-side-brand">
+                            <div class="ai-avatar-lg">AI</div>
+                            <div>
+                                <h3>Telyu AI</h3>
+                                <p>Asisten pintar manajemen asrama</p>
+                            </div>
+                        </div>
+                        <p class="ai-side-label">Coba pertanyaan ini</p>
+                        <div class="ai-prompt-cards">
+                            <button type="button" class="prompt-card chip" data-prompt="Kamar yang AC-nya tidak dingin">
+                                <span class="prompt-emoji">❄️</span>
+                                <span>AC tidak dingin</span>
+                            </button>
+                            <button type="button" class="prompt-card chip" data-prompt="Mahasiswa izin keperluan keluarga">
+                                <span class="prompt-emoji">👨‍👩‍👧</span>
+                                <span>Izin keluarga</span>
+                            </button>
+                            <button type="button" class="prompt-card chip" data-prompt="Kamar apa saja yang masih kosong?">
+                                <span class="prompt-emoji">🛏️</span>
+                                <span>Kamar kosong</span>
+                            </button>
+                            <button type="button" class="prompt-card chip" data-prompt="Tagihan yang belum lunas">
+                                <span class="prompt-emoji">💰</span>
+                                <span>Tagihan belum lunas</span>
+                            </button>
+                            <button type="button" class="prompt-card chip" data-prompt="Laporan fasilitas yang belum selesai">
+                                <span class="prompt-emoji">🔧</span>
+                                <span>Laporan aktif</span>
+                            </button>
+                            <button type="button" class="prompt-card chip" data-prompt="Tampilkan statistik asrama">
+                                <span class="prompt-emoji">📈</span>
+                                <span>Statistik asrama</span>
+                            </button>
+                        </div>
+                        <div class="ai-side-tip">
+                            <strong>Tips</strong>
+                            <p>Tanyakan dengan bahasa natural. AI akan mencari langsung dari database asrama Anda.</p>
+                        </div>
+                    </aside>
+
+                    <div class="ai-chat-area">
+                        <div class="ai-chat-top">
+                            <div>
+                                <h3>Chat dengan Asisten</h3>
+                                <p>Powered by TelyuStay · database_asrama</p>
+                            </div>
+                            <span class="ai-live-badge"><span class="pulse-dot"></span> Online</span>
+                        </div>
+
+                        <div id="chatMessages" class="chat-messages">
+                            <div class="chat-row ai">
+                                <div class="chat-avatar ai-avatar">AI</div>
+                                <div class="chat-bubble ai">
+                                    Halo! Saya <strong>Telyu AI</strong> — asisten manajemen asrama Anda. Tanyakan apa saja tentang kamar, izin, laporan fasilitas, pembayaran, atau statistik penghuni.
+                                </div>
+                            </div>
+                        </div>
+
+                        <form id="chatForm" class="chat-input-bar">
+                            <div class="chat-input-wrap">
+                                <input type="text" id="chatInput" placeholder="Ketik pertanyaan Anda..." autocomplete="off">
+                                <button type="submit" class="chat-send-btn" aria-label="Kirim">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+                                </button>
+                            </div>
+                            <p class="chat-disclaimer">AI menjawab berdasarkan data real-time dari database TelyuStay</p>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="toast" class="toast"></div>
+    <script src="/js/app.js"></script>
+</body>
+</html>
