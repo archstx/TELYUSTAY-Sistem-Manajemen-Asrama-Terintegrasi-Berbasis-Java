@@ -1,0 +1,379 @@
+================================================================================
+                    TELYUSTAY - SISTEM MANAJEMEN ASRAMA
+                         DOKUMEN ALUR SISTEM
+================================================================================
+Disusun untuk keperluan Laporan Tugas Besar PBO
+Program Studi S1 Informatika - Telkom University
+================================================================================
+
+
+BAB III  ALUR SISTEM
+
+
+3.1  Gambaran Umum Alur Sistem
+
+TelyuStay adalah sistem manajemen asrama terintegrasi berbasis Java yang
+mengotomasi administrasi penghuni, perizinan keluar-masuk, laporan fasilitas,
+dan pembayaran asrama. Sistem dirancang menggunakan konsep Object-Oriented
+Programming (OOP) dan terhubung ke database MySQL bernama database_asrama.
+
+Alur sistem secara umum mengikuti pola berikut:
+
+    Pengguna → Antarmuka (Web/Console) → Service Layer → DAO → Database MySQL
+
+Antarmuka yang tersedia:
+  (1) Mode Web    : Halaman HTML/CSS/JS + REST API Java
+  (2) Mode Console: Menu interaktif berbasis terminal (Scanner)
+
+Kedua mode menggunakan service layer yang sama (AsramaCrudService) sehingga
+logika bisnis dan integritas data tetap konsisten.
+
+
+3.2  Alur Menjalankan Aplikasi
+
+3.2.1  Langkah Awal
+  a. Pengguna menjalankan class Main.java melalui NetBeans.
+  b. Sistem menampilkan banner TelyuStay dan menu pemilihan mode:
+       1 = Mode Console (Input Terminal)
+       2 = Mode Web (HTML + Database)
+       0 = Keluar
+  c. Sistem melakukan pengecekan koneksi ke database MySQL melalui
+     DatabaseConnection dan file konfigurasi config/database.properties.
+
+3.2.2  Kondisi Koneksi Database
+  a. Jika koneksi berhasil, pengguna dapat melanjutkan ke mode yang dipilih.
+  b. Jika koneksi gagal, sistem menampilkan peringatan dengan langkah
+     perbaikan:
+       - Pastikan MySQL/MariaDB sudah berjalan
+       - Import file database_asrama.sql
+       - Sesuaikan username/password di config/database.properties
+
+3.2.3  Pemilihan Mode
+  a. Mode 1 (Console) → memanggil class AsramaMenu.jalankan()
+  b. Mode 2 (Web)     → memanggil class WebServer.start()
+  c. Mode 0 (Keluar)  → program berakhir
+
+
+3.3  Alur Mode Web (HTML + Database)
+
+3.3.1  Inisialisasi Web Server
+  a. Pengguna memilih Mode 2 pada menu utama.
+  b. WebServer mencari port kosong pada rentang 8080–8090.
+  c. Jika port 8080 sedang dipakai proses lain, sistem otomatis beralih
+     ke port berikutnya (8081, 8082, dan seterusnya).
+  d. Server Java aktif dan menampilkan URL akses, contoh:
+     http://localhost:8080
+
+3.3.2  Akses Halaman Web
+  a. Pengguna membuka URL tersebut di browser.
+  b. Browser memuat file web/index.html beserta css/style.css dan js/app.js.
+  c. JavaScript (app.js) memanggil REST API ke server Java untuk mengambil
+     data awal (statistik dashboard dan data CRUD).
+
+3.3.3  Komunikasi Frontend–Backend
+  a. Frontend (HTML/JS) mengirim request HTTP ke endpoint API Java.
+  b. WebServer menerima request dan meneruskannya ke AsramaCrudService.
+  c. AsramaCrudService memanggil DatabaseAsramaDao untuk operasi SQL.
+  d. Hasil query dikembalikan sebagai JSON ke browser.
+  e. JavaScript menampilkan data pada tabel dan form di halaman web.
+
+3.3.4  Endpoint API yang Tersedia
+  - GET/POST/PUT/DELETE  /api/mahasiswa
+  - GET/POST/PUT/DELETE  /api/gedung
+  - GET/POST/PUT/DELETE  /api/kamar
+  - GET/POST/PUT/DELETE  /api/izin
+  - GET/POST/PUT/DELETE  /api/laporan
+  - GET/POST/PUT/DELETE  /api/payment
+  - GET                  /api/stats
+
+Catatan: HTML tidak dilayani oleh Apache/XAMPP secara default. File web
+disajikan langsung oleh WebServer Java saat Mode 2 dijalankan.
+
+
+3.4  Alur Mode Console (Terminal)
+
+3.4.1  Menu Utama
+  Pengguna memilih Mode 1, kemudian sistem menampilkan menu:
+    1. Kelola Mahasiswa
+    2. Kelola Gedung
+    3. Kelola Kamar
+    4. Kelola Izin Keluar
+    5. Kelola Laporan Fasilitas
+    6. Kelola Pembayaran
+    7. Fitur Khusus (Dashboard & Log)
+    0. Keluar
+
+3.4.2  Submenu CRUD
+  Setiap modul memiliki operasi:
+    - Tambah (Create)
+    - Lihat Semua (Read All)
+    - Cari (Read by ID)
+    - Ubah (Update)
+    - Hapus (Delete)
+
+3.4.3  Proses Input
+  a. Pengguna memasukkan data melalui keyboard (class Scanner).
+  b. Data diproses oleh AsramaMenu dan diteruskan ke AsramaCrudService.
+  c. Service layer menyimpan atau mengambil data dari database MySQL.
+  d. Hasil operasi ditampilkan kembali di terminal.
+
+
+3.5  Alur CRUD Mahasiswa
+
+3.5.1  Tambah Mahasiswa (Create)
+  a. Pengguna mengisi: ID, Nama, NIM, Prodi, No. Telepon, Username,
+     Password, Nomor Kamar, dan Kode/Nama Gedung.
+  b. Sistem memvalidasi gedung (misal: GA atau Gedung Anggrek).
+  c. Jika nomor kamar belum terdaftar, sistem otomatis membuat record
+     kamar baru dan menghubungkannya ke gedung terkait.
+  d. Sistem memvalidasi kapasitas kamar (tidak melebihi slot tersedia).
+  e. Data mahasiswa disimpan ke tabel users dengan role = 'Mahasiswa'.
+  f. Kolom nomor_kamar pada tabel users diisi sesuai kamar yang dipilih.
+
+3.5.2  Lihat Mahasiswa (Read)
+  a. Sistem membaca data dari tabel users WHERE role = 'Mahasiswa'.
+  b. Data ditampilkan beserta informasi kamar dan gedung (join kamar–gedung).
+
+3.5.3  Ubah Mahasiswa (Update)
+  a. Pengguna memilih mahasiswa berdasarkan ID.
+  b. Sistem memperbarui data nama, NIM, prodi, telepon, username, password,
+     nomor kamar, dan relasi gedung jika diubah.
+  c. Jika password dikosongkan saat edit, password lama tetap digunakan.
+
+3.5.4  Hapus Mahasiswa (Delete)
+  a. Pengguna memasukkan ID mahasiswa.
+  b. Sistem menghapus record dari tabel users.
+  c. Data izin, laporan, dan payment terkait ikut terhapus (ON DELETE CASCADE).
+
+
+3.6  Alur CRUD Gedung
+
+3.6.1  Tambah Gedung
+  a. Input: Kode Gedung, Nama Gedung, Jenis Gedung.
+  b. Data disimpan ke tabel gedung.
+
+3.6.2  Lihat Gedung
+  a. Sistem menampilkan daftar gedung beserta jumlah kamar dan penghuni.
+  b. Jumlah penghuni dihitung dari mahasiswa yang kamar-nya terhubung
+     ke gedung tersebut.
+
+3.6.3  Ubah Gedung
+  a. Pengguna mengubah jenis gedung berdasarkan kode gedung.
+
+3.6.4  Hapus Gedung
+  a. Record gedung dihapus dari tabel gedung.
+  b. Relasi kamar ke gedung di-set NULL (ON DELETE SET NULL).
+
+
+3.7  Alur CRUD Kamar
+
+3.7.1  Tambah Kamar (Manual)
+  a. Input: Nomor Kamar, Kapasitas, Kode Gedung.
+  b. Data disimpan ke tabel kamar dengan foreign key kode_gedung.
+
+3.7.2  Tambah Kamar (Otomatis via Mahasiswa)
+  a. Saat mahasiswa di-assign ke kamar yang belum ada, sistem otomatis
+     membuat kamar baru (kapasitas default: 2) dan menghubungkannya ke gedung.
+
+3.7.3  Lihat Kamar
+  a. Sistem menampilkan: nomor kamar, gedung, kapasitas, jumlah penghuni,
+     nama penghuni, dan sisa slot.
+
+3.7.4  Kelola Penghuni Kamar
+  a. Mahasiswa dapat ditambahkan atau dihapus dari kamar.
+  b. Sistem memvalidasi kapasitas kamar sebelum menambah penghuni.
+
+
+3.8  Alur Perizinan Keluar (Izin Keluar)
+
+3.8.1  Pengajuan Izin
+  a. Mahasiswa mengajukan izin dengan mengisi: ID Mahasiswa, Tujuan,
+     Waktu Keluar, dan Waktu Kembali.
+  b. Class IzinKeluar mengimplementasikan interface PermitSystem.
+
+3.8.2  Validasi Otomatis (applyPermit & validateStatus)
+  a. Cek apakah mahasiswa sudah memiliki kamar.
+  b. Cek apakah waktu kembali melewati jam malam (22:00) melalui cekJamMalam().
+  c. Jika validasi gagal, status izin = DITOLAK beserta alasan penolakan.
+  d. Jika validasi berhasil, status izin = DIAJUKAN.
+
+3.8.3  Validasi oleh Senior Resident
+  a. Senior Resident memeriksa izin yang berstatus DIAJUKAN.
+  b. Jika disetujui, status berubah menjadi DISETUJUI.
+  c. Data disimpan ke tabel izin_keluar.
+
+3.8.4  Status Izin (Enum PermitStatus)
+  - DIAJUKAN
+  - DISETUJUI
+  - DITOLAK
+  - SELESAI
+
+
+3.9  Alur Laporan Fasilitas (Helpdesk)
+
+3.9.1  Pembuatan Laporan
+  a. Mahasiswa membuat laporan kerusakan: Deskripsi dan Lokasi.
+  b. Class FacilityReport dibuat dengan status awal BARU.
+  c. Data disimpan ke tabel facility_report.
+
+3.9.2  Penanganan Laporan
+  a. Senior Resident atau Pengelola Gedung mengubah status laporan.
+  b. Alur status: BARU → DIPROSES → SELESAI (Enum ReportStatus).
+
+3.9.3  Status Laporan (Enum ReportStatus)
+  - BARU
+  - DIPROSES
+  - SELESAI
+
+
+3.10  Alur Pembayaran (Payment)
+
+3.10.1  Pembuatan Tagihan
+  a. Input: ID Pembayaran, ID Mahasiswa, Jumlah Tagihan.
+  b. Class Payment dibuat dengan status awal BELUM_BAYAR.
+  c. Data disimpan ke tabel payment.
+
+3.10.2  Proses Pembayaran
+  a. Sistem dapat menambahkan denda (tambahDenda).
+  b. Jika pembayaran diproses (prosesPembayaran), status = LUNAS dan
+     tanggal bayar diisi otomatis.
+  c. Total bayar dihitung melalui hitungTotalBayar() = tagihan + denda.
+
+3.10.3  Status Pembayaran (Enum PaymentStatus)
+  - BELUM_BAYAR
+  - LUNAS
+  - TERLAMBAT
+
+
+3.11  Alur Activity Logger
+
+3.11.1  Pencatatan Log
+  a. Setiap aktivitas penting (login, registrasi, pengajuan izin, dll.)
+     dicatat oleh class ActivityLogger.
+  b. Data log disimpan ke tabel activity_log.
+
+3.11.2  Penampilan Log
+  a. Log dapat ditampilkan per user atau dicetak seluruhnya (cetakLog).
+  b. Digunakan untuk audit keamanan asrama.
+
+
+3.12  Alur Hierarki Pengguna (OOP – Inheritance)
+
+3.12.1  Abstract Class User
+  - Atribut: id, nama, role, username, password
+  - Method: login(), logout(), tampilkanDashboard() [abstract]
+
+3.12.2  Subclass
+  a. Mahasiswa
+     - Atribut tambahan: nim, prodi, noTelepon, kamar
+     - Method: ajukanIzin(), buatLaporan(), bayarTagihan()
+  b. SeniorResident
+     - Atribut tambahan: nomorSR, gedungTugas
+     - Method: validasiIzin(), ubahStatusLaporan(), lihatDaftarPenghuni()
+  c. PengelolaGedung
+     - Atribut tambahan: nomorPegawai
+     - Method: kelolaGedung(), kelolaKamar(), lihatLaporanKerusakan()
+
+3.12.3  Polymorphism
+  Setiap subclass meng-override method tampilkanDashboard() sehingga
+  tampilan dashboard berbeda sesuai role pengguna.
+
+
+3.13  Alur Interface PermitSystem
+
+3.13.1  Kontrak Interface
+  - applyPermit(Mahasiswa mahasiswa): boolean
+  - validateStatus(Mahasiswa mahasiswa): boolean
+
+3.13.2  Implementasi
+  Class IzinKeluar implements PermitSystem
+  - applyPermit()  : menjalankan validasi dan menentukan status izin
+  - validateStatus(): memastikan mahasiswa memiliki kamar
+
+
+3.14  Alur Relasi Database
+
+3.14.1  Struktur Tabel
+  gedung          → data gedung asrama
+  kamar           → data kamar (FK: kode_gedung → gedung)
+  users           → semua pengguna (FK: nomor_kamar → kamar)
+  izin_keluar     → data izin (FK: mahasiswa_id → users)
+  facility_report → data laporan (FK: mahasiswa_id → users)
+  payment         → data pembayaran (FK: mahasiswa_id → users)
+  activity_log    → log aktivitas (FK: user_id → users)
+
+3.14.2  Diagram Relasi (Teks)
+
+  gedung (1) ──────< kamar (1..*)
+  kamar  (1) ──────< users/mahasiswa (0..*)
+  users  (1) ──────< izin_keluar (0..*)
+  users  (1) ──────< facility_report (0..*)
+  users  (1) ──────< payment (0..*)
+  users  (1) ──────< activity_log (0..*)
+
+
+3.15  Alur End-to-End (Contoh Kasus)
+
+Contoh: Mahasiswa Rizqy didaftarkan ke Kamar 410, Gedung Anggrek
+
+  Langkah 1 : Admin menjalankan Main.java → pilih Mode Web (2)
+  Langkah 2 : Browser membuka http://localhost:8080
+  Langkah 3 : Admin buka tab Mahasiswa, isi data:
+              - ID: U007
+              - Nama: Rizqy Fasha Rabbani
+              - NIM: 103012400041
+              - Nomor Kamar: 410
+              - Gedung: Gedung Anggrek (GA)
+  Langkah 4 : Klik Simpan → POST /api/mahasiswa
+  Langkah 5 : Backend memvalidasi gedung GA (Gedung Anggrek)
+  Langkah 6 : Karena kamar 410 belum ada, sistem otomatis:
+              - INSERT ke tabel kamar (410, kapasitas 2, kode_gedung GA)
+              - INSERT ke tabel users (mahasiswa Rizqy, nomor_kamar 410)
+  Langkah 7 : Tab Mahasiswa menampilkan Rizqy dengan kamar 410
+  Langkah 8 : Tab Kamar menampilkan kamar 410 di Gedung Anggrek,
+              penghuni: Rizqy Fasha Rabbani
+  Langkah 9 : Tab Gedung menampilkan Gedung Anggrek dengan
+              jumlah kamar dan penghuni bertambah
+  Langkah 10: Rizqy dapat mengajukan izin keluar dan laporan fasilitas
+              melalui tab terkait
+
+
+3.16  Alur Singkat Keseluruhan Sistem
+
+  [Pengguna]
+      |
+      v
+  [Main.java - Pilih Mode]
+      |
+      +--- Mode 1: AsramaMenu (Console/Scanner)
+      |         |
+      |         v
+      |    [AsramaCrudService]
+      |
+      +--- Mode 2: WebServer (HTTP)
+                |
+                v
+           [Browser: HTML + CSS + JS]
+                |
+                v
+           [REST API /api/*]
+                |
+                v
+           [AsramaCrudService]
+                |
+                v
+           [DatabaseAsramaDao]
+                |
+                v
+           [MySQL: database_asrama]
+                |
+                v
+           [Response JSON / Output Terminal]
+                |
+                v
+           [Tampilan Data ke Pengguna]
+
+
+================================================================================
+                              AKHIR DOKUMEN
+================================================================================
